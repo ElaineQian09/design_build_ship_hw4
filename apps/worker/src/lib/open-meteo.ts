@@ -1,4 +1,6 @@
 const CURRENT_WEATHER_FIELDS = ["temperature_2m", "wind_speed_10m", "weather_code"] as const;
+const MAX_RATE_LIMIT_RETRIES = 3;
+const RATE_LIMIT_BACKOFF_MS = 1500;
 
 export type CityRow = {
   id: string;
@@ -25,35 +27,30 @@ type OpenMeteoCurrentResponse = {
   };
 };
 
-function buildForecastUrl(baseUrl: string, city: CityRow) {
+function sleep(ms: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+function buildForecastUrl(baseUrl: string, cities: CityRow[]) {
   const normalizedBaseUrl = baseUrl.replace(/\/$/, "");
   const url = new URL(`${normalizedBaseUrl}/forecast`);
 
-  url.searchParams.set("latitude", String(city.latitude));
-  url.searchParams.set("longitude", String(city.longitude));
+  url.searchParams.set("latitude", cities.map((city) => String(city.latitude)).join(","));
+  url.searchParams.set("longitude", cities.map((city) => String(city.longitude)).join(","));
   url.searchParams.set("current", CURRENT_WEATHER_FIELDS.join(","));
-  url.searchParams.set("timezone", "UTC");
+  url.searchParams.set("timezone", cities.map(() => "UTC").join(","));
   url.searchParams.set("timeformat", "unixtime");
 
   return url;
 }
 
-export async function fetchCurrentWeather(
-  baseUrl: string,
-  city: CityRow
-): Promise<WeatherReadingInsert> {
-  const url = buildForecastUrl(baseUrl, city);
-  const response = await fetch(url.toString(), {
-    headers: {
-      Accept: "application/json"
-    }
-  });
+function normalizeBatchPayload(payload: OpenMeteoCurrentResponse | OpenMeteoCurrentResponse[]) {
+  return Array.isArray(payload) ? payload : [payload];
+}
 
-  if (!response.ok) {
-    throw new Error(`Open-Meteo request failed for ${city.name}: ${response.status}`);
-  }
-
-  const payload = (await response.json()) as OpenMeteoCurrentResponse;
+function parseReadingForCity(city: CityRow, payload: OpenMeteoCurrentResponse): WeatherReadingInsert {
   const current = payload.current;
 
   if (
@@ -73,4 +70,50 @@ export async function fetchCurrentWeather(
     weather_code: current.weather_code,
     observed_at: new Date(current.time * 1000).toISOString()
   };
+}
+
+export async function fetchCurrentWeatherBatch(
+  baseUrl: string,
+  cities: CityRow[]
+): Promise<WeatherReadingInsert[]> {
+  if (cities.length === 0) {
+    return [];
+  }
+
+  const url = buildForecastUrl(baseUrl, cities);
+
+  for (let attempt = 1; attempt <= MAX_RATE_LIMIT_RETRIES; attempt += 1) {
+    const response = await fetch(url.toString(), {
+      headers: {
+        Accept: "application/json"
+      }
+    });
+
+    if (response.status === 429) {
+      if (attempt === MAX_RATE_LIMIT_RETRIES) {
+        throw new Error(`Open-Meteo request failed with 429 after ${MAX_RATE_LIMIT_RETRIES} attempts`);
+      }
+
+      await sleep(RATE_LIMIT_BACKOFF_MS * attempt);
+      continue;
+    }
+
+    if (!response.ok) {
+      throw new Error(`Open-Meteo request failed: ${response.status}`);
+    }
+
+    const payload = normalizeBatchPayload(
+      (await response.json()) as OpenMeteoCurrentResponse | OpenMeteoCurrentResponse[]
+    );
+
+    if (payload.length !== cities.length) {
+      throw new Error(
+        `Open-Meteo returned ${payload.length} result(s) for ${cities.length} requested cities`
+      );
+    }
+
+    return cities.map((city, index) => parseReadingForCity(city, payload[index]));
+  }
+
+  throw new Error("Open-Meteo request failed unexpectedly");
 }
