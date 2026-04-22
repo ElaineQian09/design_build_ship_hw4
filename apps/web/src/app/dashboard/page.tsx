@@ -62,22 +62,11 @@ export default async function DashboardPage() {
   const typedFavoriteRows = favoritesError ? [] : ((favoriteRows ?? []) as FavoriteRow[]);
   const favoriteCityIds = new Set(typedFavoriteRows.map((favorite) => favorite.city_id));
 
-  let favoriteCities: CityRow[] = [];
-  let favoriteCitiesErrorMessage: string | undefined;
-
-  if (favoriteCityIds.size > 0) {
-    const { data: favoriteCityRows, error: favoriteCitiesError } = await supabase
-      .from("cities")
-      .select("id, name, country, latitude, longitude, timezone")
-      .in("id", Array.from(favoriteCityIds))
-      .order("name", { ascending: true });
-
-    favoriteCities = favoriteCitiesError ? [] : ((favoriteCityRows ?? []) as CityRow[]);
-    favoriteCitiesErrorMessage = favoriteCitiesError?.message;
-  }
-
   let weatherReadings: LatestWeatherRow[] = [];
   let weatherErrorMessage: string | undefined;
+
+  const typedCities = citiesError ? [] : ((cities ?? []) as CityRow[]);
+  const favoriteCities = typedCities.filter((city) => favoriteCityIds.has(city.id));
 
   if (favoriteCities.length > 0) {
     const { data: readings, error: weatherError } = await supabase
@@ -96,14 +85,12 @@ export default async function DashboardPage() {
   const setupErrors = [
     citiesError?.message,
     favoritesError?.message,
-    favoriteCitiesErrorMessage,
     weatherErrorMessage
   ].filter(
     (message): message is string => Boolean(message)
   );
 
   const hasMissingTableError = setupErrors.some(isMissingRelationError);
-  const typedCities = citiesError ? [] : ((cities ?? []) as CityRow[]);
   const latestWeatherByCity = getLatestWeatherByCity(weatherReadings);
   const typedProfile = profile as ProfileRow | null;
   const weatherReadyCount = favoriteCities.filter((city) => latestWeatherByCity.has(city.id)).length;
