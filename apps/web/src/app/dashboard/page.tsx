@@ -109,10 +109,7 @@ export default async function DashboardPage() {
             <Link className="text-2xl font-semibold tracking-tight text-slate-900" href="/">
               Live Weather Board
             </Link>
-            <p className="mt-1 text-sm text-slate-600">
-              Assignment 4 dashboard for{" "}
-              <span className="font-medium text-slate-900">{typedProfile?.email ?? user.email}</span>
-            </p>
+            <p className="mt-1 text-sm text-slate-600">Assignment 4 dashboard · signed in</p>
           </div>
           <SignOutButton />
         </div>
