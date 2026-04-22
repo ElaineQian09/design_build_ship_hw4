@@ -54,7 +54,10 @@ export function AuthForm({ mode, initialMessage }: AuthFormProps) {
 
       const { data, error } = await supabase.auth.signUp({
         email,
-        password
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/confirm?next=/dashboard`
+        }
       });
 
       if (error) {
@@ -78,7 +81,7 @@ export function AuthForm({ mode, initialMessage }: AuthFormProps) {
       }
 
       const message =
-        "Account created. If email confirmation is enabled, confirm your email and then sign in.";
+        "Account created. Check your email to confirm the account, then continue to your dashboard.";
 
       setNotice(message);
       router.push(`/login?message=${encodeURIComponent(message)}`);

@@ -1,21 +1,46 @@
 # live-weather-board
 
-Monorepo scaffold for Assignment 4.
+Live Weather Board is an Assignment 4 multi-service system built with this architecture:
 
-## Apps
+**Open-Meteo -> Railway worker -> Supabase Database + Realtime -> Next.js frontend on Vercel**
 
-- `apps/web`: Next.js + Tailwind frontend for Vercel
-- `apps/worker`: TypeScript Node.js worker for Railway
+## Monorepo
 
-## Supabase
+- `apps/web`: Next.js + Tailwind frontend
+- `apps/worker`: TypeScript Node.js background worker
+- `supabase`: schema migration and seed data
 
-- Schema migration: `supabase/migrations/202604220001_initial_schema.sql`
-- Seed data: `supabase/seed.sql`
-- Realtime should be enabled on `public.weather_readings`
+## Core Features
 
-Apply in Supabase SQL Editor or with the Supabase CLI migration flow.
+- Supabase Auth for sign up, log in, and protected dashboard access
+- User-specific favorite cities with Row Level Security
+- Railway worker polling Open-Meteo every few minutes
+- Weather data stored in Supabase
+- Supabase Realtime refreshing the dashboard without a manual page reload
 
-## Quick start
+## Environment Variables
+
+Use the checked-in examples as templates:
+
+- `./.env.example`
+- `apps/web/.env.example`
+- `apps/worker/.env.example`
+
+Production variables should be added in:
+
+- Vercel dashboard for `apps/web`
+- Railway dashboard for `apps/worker`
+
+## Supabase Setup
+
+Run these files in Supabase SQL Editor:
+
+1. `supabase/migrations/202604220001_initial_schema.sql`
+2. `supabase/seed.sql`
+
+Enable Realtime on `public.weather_readings`.
+
+## Local Development
 
 ```bash
 npm install
