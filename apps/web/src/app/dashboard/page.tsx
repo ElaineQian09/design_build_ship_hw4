@@ -94,6 +94,7 @@ export default async function DashboardPage() {
   const latestWeatherByCity = getLatestWeatherByCity(weatherReadings);
   const typedProfile = profile as ProfileRow | null;
   const weatherReadyCount = favoriteCities.filter((city) => latestWeatherByCity.has(city.id)).length;
+  const favoriteCount = favoriteCityIds.size;
 
   return (
     <main className="min-h-screen">
@@ -116,7 +117,9 @@ export default async function DashboardPage() {
       </div>
 
       <div className="mx-auto max-w-6xl px-6 py-10">
-        <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+          <div className="h-2 bg-gradient-to-r from-sky-500 via-cyan-400 to-emerald-400" />
+          <div className="p-8">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl">
               <p className="text-sm font-medium uppercase tracking-[0.2em] text-sky-700">
@@ -126,26 +129,38 @@ export default async function DashboardPage() {
                 Track weather updates for your saved cities
               </h1>
               <p className="mt-3 text-base leading-7 text-slate-600">
-                Add cities to your favorites, then watch the latest readings update as the
-                Railway worker writes new rows into Supabase.
+                Save the cities you care about and see the newest weather update for each one.
+                Fresh readings appear automatically as new data arrives.
               </p>
+              <div className="mt-6 flex flex-wrap gap-3 text-sm text-slate-600">
+                <div className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2">
+                  Personalized city list
+                </div>
+                <div className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2">
+                  Live weather updates
+                </div>
+                <div className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2">
+                  Powered by Open-Meteo + Supabase
+                </div>
+              </div>
             </div>
             <div className="flex flex-wrap gap-3">
-              <div className="rounded-2xl bg-slate-100 px-4 py-3">
+              <div className="min-w-36 rounded-2xl bg-slate-100 px-4 py-3">
                 <p className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500">
-                  Favorites
+                  Saved Cities
                 </p>
-                <p className="mt-1 text-2xl font-semibold text-slate-900">{favoriteCities.length}</p>
+                <p className="mt-1 text-2xl font-semibold text-slate-900">{favoriteCount}</p>
               </div>
-              <div className="rounded-2xl bg-emerald-50 px-4 py-3">
+              <div className="min-w-36 rounded-2xl bg-emerald-50 px-4 py-3">
                 <p className="text-xs font-medium uppercase tracking-[0.2em] text-emerald-700">
-                  Live Cards
+                  Live Weather
                 </p>
                 <p className="mt-1 text-2xl font-semibold text-emerald-800">
                   {weatherReadyCount}
                 </p>
               </div>
             </div>
+          </div>
           </div>
         </section>
 
@@ -184,7 +199,7 @@ export default async function DashboardPage() {
           </section>
         ) : null}
 
-        <section className="mt-8 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+        <section className="mt-8 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
           <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div className="max-w-xl">
@@ -195,8 +210,7 @@ export default async function DashboardPage() {
                   Browse supported cities
                 </h2>
                 <p className="mt-3 text-sm leading-6 text-slate-600">
-                  Add cities to your favorites. Each favorite is stored in <code>user_favorites</code>
-                  and stays scoped to your account through RLS.
+                  Pick the cities you want to follow and add them to your board.
                 </p>
               </div>
               <div className="rounded-2xl bg-slate-100 px-4 py-3 text-right">
@@ -220,7 +234,7 @@ export default async function DashboardPage() {
                 <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm leading-6 text-slate-600">
                   {hasMissingTableError
                     ? "City data will appear here after the Supabase schema and seed data are created."
-                    : "No cities have been seeded yet."}
+                    : "No cities are available yet."}
                 </div>
               )}
             </div>
@@ -233,11 +247,10 @@ export default async function DashboardPage() {
                   Favorite Weather
                 </p>
                 <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900">
-                  Latest readings for your cities
+                  Weather cards for your cities
                 </h2>
                 <p className="mt-3 text-sm leading-6 text-slate-600">
-                  These cards combine your favorite cities with the newest row stored in
-                  <code> weather_readings</code> for each city.
+                  Temperature, wind speed, weather code, and observation time update as fresh readings arrive.
                 </p>
               </div>
               <div className="rounded-2xl bg-emerald-50 px-4 py-3 text-right">
@@ -245,7 +258,7 @@ export default async function DashboardPage() {
                   Showing
                 </p>
                 <p className="mt-1 text-2xl font-semibold text-emerald-800">
-                  {favoriteCities.length}
+                  {favoriteCount}
                 </p>
               </div>
             </div>
@@ -263,7 +276,9 @@ export default async function DashboardPage() {
                 <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm leading-6 text-slate-600">
                   {hasMissingTableError
                     ? "Favorites will appear here after the database tables are ready."
-                    : "You have not added any favorite cities yet. Add a city on the left to start building your dashboard."}
+                    : favoriteCount > 0
+                      ? "Your saved cities are loading. Refresh in a moment if the cards do not appear."
+                      : "You have not saved any cities yet. Add one from the left to start your dashboard."}
                 </div>
               )}
             </div>

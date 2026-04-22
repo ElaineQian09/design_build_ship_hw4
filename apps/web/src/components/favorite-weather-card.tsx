@@ -34,41 +34,55 @@ export function FavoriteWeatherCard({ city, weather }: FavoriteWeatherCardProps)
       </div>
 
       {weather ? (
-        <dl className="mt-5 grid gap-4 text-sm text-slate-600 sm:grid-cols-2">
-          <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-100">
-            <dt className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
-              Temperature
-            </dt>
-            <dd className="mt-2 text-2xl font-semibold text-slate-900">
-              {formatMetric(weather.temperature, "°C")}
-            </dd>
+        <>
+          <div className="mt-5 rounded-2xl bg-gradient-to-br from-sky-50 via-cyan-50 to-emerald-50 p-5 ring-1 ring-sky-100">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-sky-700">
+                  Current Temperature
+                </p>
+                <p className="mt-2 text-4xl font-semibold tracking-tight text-slate-900">
+                  {formatMetric(weather.temperature, "°C")}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-white/80 px-4 py-3 text-right shadow-sm ring-1 ring-sky-100">
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
+                  Weather Code
+                </p>
+                <p className="mt-1 text-xl font-semibold text-slate-900">{weather.weather_code}</p>
+              </div>
+            </div>
+            <p className="mt-4 text-sm text-slate-600">
+              Updated {formatObservedAt(weather.observed_at)} UTC
+            </p>
           </div>
-          <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-100">
+
+          <dl className="mt-4 grid gap-4 text-sm text-slate-600 sm:grid-cols-2">
+            <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-100">
             <dt className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
               Windspeed
             </dt>
             <dd className="mt-2 text-2xl font-semibold text-slate-900">
               {formatMetric(weather.wind_speed, " km/h")}
             </dd>
-          </div>
-          <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-100">
-            <dt className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
-              Weather Code
-            </dt>
-            <dd className="mt-2 text-lg font-semibold text-slate-900">{weather.weather_code}</dd>
-          </div>
-          <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-100">
-            <dt className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
-              Observed At
-            </dt>
-            <dd className="mt-2 text-sm font-medium text-slate-900">
-              {formatObservedAt(weather.observed_at)} UTC
-            </dd>
-          </div>
-        </dl>
+            </div>
+            <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-100">
+              <dt className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
+                Observation Time
+              </dt>
+              <dd className="mt-2 text-sm font-medium text-slate-900">
+                {formatObservedAt(weather.observed_at)} UTC
+              </dd>
+            </div>
+          </dl>
+        </>
       ) : (
-        <div className="mt-5 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
-          No weather reading has been stored for this city yet.
+        <div className="mt-5 rounded-2xl border border-dashed border-sky-200 bg-sky-50/60 p-4 text-sm text-slate-700">
+          <p className="font-medium text-slate-900">Waiting for a weather update</p>
+          <p className="mt-2">
+            The worker has not written a reading for this city yet. Once a new update arrives,
+            the card will refresh automatically.
+          </p>
         </div>
       )}
 
