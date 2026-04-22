@@ -1,6 +1,6 @@
 import { removeFavoriteCity } from "../app/dashboard/actions";
 import type { LatestWeatherRow } from "../lib/weather";
-import { formatObservedAt } from "../lib/weather";
+import { formatWeatherTimestamp } from "../lib/weather";
 
 type FavoriteWeatherCardProps = {
   city: {
@@ -53,7 +53,7 @@ export function FavoriteWeatherCard({ city, weather }: FavoriteWeatherCardProps)
               </div>
             </div>
             <p className="mt-4 text-sm text-slate-600">
-              Updated {formatObservedAt(weather.observed_at)} UTC
+              Updated {formatWeatherTimestamp(weather.created_at)} UTC
             </p>
           </div>
 
@@ -68,10 +68,10 @@ export function FavoriteWeatherCard({ city, weather }: FavoriteWeatherCardProps)
             </div>
             <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-100">
               <dt className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
-                Observation Time
+                Last Sync
               </dt>
               <dd className="mt-2 text-sm font-medium text-slate-900">
-                {formatObservedAt(weather.observed_at)} UTC
+                {formatWeatherTimestamp(weather.created_at)} UTC
               </dd>
             </div>
           </dl>

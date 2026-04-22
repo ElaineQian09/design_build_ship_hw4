@@ -4,6 +4,7 @@ export type LatestWeatherRow = {
   wind_speed: number | string | null;
   weather_code: number | null;
   observed_at: string;
+  created_at: string;
 };
 
 export function getLatestWeatherByCity(readings: LatestWeatherRow[]) {
@@ -18,7 +19,7 @@ export function getLatestWeatherByCity(readings: LatestWeatherRow[]) {
   return latestByCity;
 }
 
-export function formatObservedAt(value: string) {
+export function formatWeatherTimestamp(value: string) {
   return new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",
     timeStyle: "short",

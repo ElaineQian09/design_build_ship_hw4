@@ -71,12 +71,12 @@ export default async function DashboardPage() {
   if (favoriteCities.length > 0) {
     const { data: readings, error: weatherError } = await supabase
       .from("weather_readings")
-      .select("city_id, temperature, wind_speed, weather_code, observed_at")
+      .select("city_id, temperature, wind_speed, weather_code, observed_at, created_at")
       .in(
         "city_id",
         favoriteCities.map((city) => city.id)
       )
-      .order("observed_at", { ascending: false });
+      .order("created_at", { ascending: false });
 
     weatherReadings = weatherError ? [] : ((readings ?? []) as LatestWeatherRow[]);
     weatherErrorMessage = weatherError?.message;
