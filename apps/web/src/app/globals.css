@@ -6,6 +6,13 @@
   color-scheme: light;
 }
 
+html {
+  min-height: 100%;
+}
+
 body {
-  @apply bg-slate-50 text-slate-900 antialiased;
+  @apply min-h-screen bg-slate-50 text-slate-900 antialiased;
+  background-image:
+    radial-gradient(circle at top left, rgba(14, 165, 233, 0.08), transparent 32rem),
+    linear-gradient(180deg, #f8fafc 0%, #eef4fb 100%);
 }
