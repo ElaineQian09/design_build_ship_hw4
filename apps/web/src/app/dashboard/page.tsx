@@ -18,7 +18,6 @@ type CityRow = {
 
 type FavoriteRow = {
   city_id: string;
-  cities: CityRow[] | null;
 };
 
 type ProfileRow = {
@@ -57,15 +56,25 @@ export default async function DashboardPage() {
 
   const { data: favoriteRows, error: favoritesError } = await supabase
     .from("user_favorites")
-    .select(
-      "city_id, cities:city_id ( id, name, country, latitude, longitude, timezone )"
-    )
+    .select("city_id")
     .order("created_at", { ascending: false });
 
   const typedFavoriteRows = favoritesError ? [] : ((favoriteRows ?? []) as FavoriteRow[]);
-  const favoriteCities = typedFavoriteRows
-    .map((favorite) => favorite.cities?.[0] ?? null)
-    .filter((city): city is CityRow => city !== null);
+  const favoriteCityIds = new Set(typedFavoriteRows.map((favorite) => favorite.city_id));
+
+  let favoriteCities: CityRow[] = [];
+  let favoriteCitiesErrorMessage: string | undefined;
+
+  if (favoriteCityIds.size > 0) {
+    const { data: favoriteCityRows, error: favoriteCitiesError } = await supabase
+      .from("cities")
+      .select("id, name, country, latitude, longitude, timezone")
+      .in("id", Array.from(favoriteCityIds))
+      .order("name", { ascending: true });
+
+    favoriteCities = favoriteCitiesError ? [] : ((favoriteCityRows ?? []) as CityRow[]);
+    favoriteCitiesErrorMessage = favoriteCitiesError?.message;
+  }
 
   let weatherReadings: LatestWeatherRow[] = [];
   let weatherErrorMessage: string | undefined;
@@ -84,13 +93,17 @@ export default async function DashboardPage() {
     weatherErrorMessage = weatherError?.message;
   }
 
-  const setupErrors = [citiesError?.message, favoritesError?.message, weatherErrorMessage].filter(
+  const setupErrors = [
+    citiesError?.message,
+    favoritesError?.message,
+    favoriteCitiesErrorMessage,
+    weatherErrorMessage
+  ].filter(
     (message): message is string => Boolean(message)
   );
 
   const hasMissingTableError = setupErrors.some(isMissingRelationError);
   const typedCities = citiesError ? [] : ((cities ?? []) as CityRow[]);
-  const favoriteCityIds = new Set(typedFavoriteRows.map((favorite) => favorite.city_id));
   const latestWeatherByCity = getLatestWeatherByCity(weatherReadings);
   const typedProfile = profile as ProfileRow | null;
   const weatherReadyCount = favoriteCities.filter((city) => latestWeatherByCity.has(city.id)).length;
